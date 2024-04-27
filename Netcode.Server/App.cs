@@ -1,14 +1,8 @@
-﻿using Server.Netcode;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading;
+﻿using Netcode.Server;
 
 namespace GameServer
 {
-	class Program
+	class App
 	{
 		static void Main(string[] args)
 		{
@@ -21,5 +15,6 @@ namespace GameServer
 			RelayServer server = new RelayServer(port);
 			server.Start();
 		}
+	}
 
 }

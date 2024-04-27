@@ -3,3 +3,7 @@ Server/.vs/
 Server/Server/bin/
 Server/obj/
 Server/bin/
+.vs/
+Netcode.Common/
+Netcode.Server/bin/
+Netcode.Server/obj/

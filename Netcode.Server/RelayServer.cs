@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-using Server.Netcode;
+using Netcode.Common;
 
-namespace Server.Netcode
+namespace Netcode.Server
 {
-	class RelayServer
+    class RelayServer
 	{
 		private TcpListener _listener;
 		private List<TcpClient> _clients = new List<TcpClient>();
-
+		
 		public RelayServer(int port)
 		{
 			_listener = new TcpListener(IPAddress.Any, port);
@@ -57,10 +53,14 @@ namespace Server.Netcode
 
 				if (bytesRead == 0)
 					break;
-				string s = Encoding.ASCII.GetString(buffer);
-				Console.WriteLine($"{client.Client.RemoteEndPoint} received {s}");
+				//string s = Encoding.ASCII.GetString(buffer);
+				//Console.WriteLine($"{client.Client.RemoteEndPoint} received {s}");
+				
 				byte[] cpBuffer = new byte[bytesRead];
 				Array.Copy(buffer,cpBuffer, bytesRead);
+				Packet p = new Packet();
+				p.WriteBytes(cpBuffer);
+				Console.WriteLine($"{client.Client.RemoteEndPoint} received {p.ReadString()}");
 				Broadcast(cpBuffer, client);
 			}
 

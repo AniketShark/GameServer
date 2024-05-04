@@ -7,9 +7,10 @@ namespace Netcode.Server
 {
     class RelayServer
 	{
+		
 		private TcpListener _listener;
 		private List<TcpClient> _clients = new List<TcpClient>();
-		
+		private List<Player> _players = new List<Player>();
 		public RelayServer(int port)
 		{
 			_listener = new TcpListener(IPAddress.Any, port);
@@ -39,29 +40,25 @@ namespace Netcode.Server
 
 			while (true)
 			{
-				byte[] buffer = new byte[1024];
+				byte[] buffer = new byte[4096];
 				int bytesRead = 0;
 				try
 				{
-					bytesRead = stream.Read(buffer, 0, buffer.Length);
+					bytesRead = stream.Read(buffer,0,buffer.Length);
 				}
 				catch
 				{
 					break;
 				}
-				
 
 				if (bytesRead == 0)
 					break;
-				//string s = Encoding.ASCII.GetString(buffer);
-				//Console.WriteLine($"{client.Client.RemoteEndPoint} received {s}");
-				
+
 				byte[] cpBuffer = new byte[bytesRead];
 				Array.Copy(buffer,cpBuffer, bytesRead);
-				Packet p = new Packet();
-				p.WriteBytes(cpBuffer);
-				Console.WriteLine($"{client.Client.RemoteEndPoint} received {p.ReadString()}");
-				Broadcast(cpBuffer, client);
+				Message msg = MessagePack.MessagePackSerializer.Deserialize<Message>(buffer);
+				Console.WriteLine($"{client.Client.RemoteEndPoint} received {msg.ToString()}");
+				Broadcast(buffer, client);
 			}
 
 			lock (_clients)
@@ -93,7 +90,6 @@ namespace Netcode.Server
 				if (client != sender)
 				{
 					NetworkStream stream = client.GetStream();
-					//byte[] buffer = Encoding.ASCII.GetBytes(data);
 					stream.Write(buffer, 0, buffer.Length);
 					stream.Flush();
 				}

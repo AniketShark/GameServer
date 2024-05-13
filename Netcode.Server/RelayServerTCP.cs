@@ -5,13 +5,13 @@ using Netcode.Common;
 
 namespace Netcode.Server
 {
-    class RelayServer
+    class RelayServerTCP
 	{
-		
 		private TcpListener _listener;
 		private List<TcpClient> _clients = new List<TcpClient>();
 		private List<Player> _players = new List<Player>();
-		public RelayServer(int port)
+		private Queue<Message> _commandQueue = new Queue<Message>();
+		public RelayServerTCP(int port)
 		{
 			_listener = new TcpListener(IPAddress.Any, port);
 		}
@@ -20,6 +20,8 @@ namespace Netcode.Server
 		{
 			_listener.Start();
 			Console.WriteLine("Server started. Waiting for connections...");
+			Thread commandProcessingThread = new Thread(ProcessCommands);
+			commandProcessingThread.Start();
 
 			while (true)
 			{
@@ -30,6 +32,48 @@ namespace Netcode.Server
 				clientThread.Start(client);
 			}
 		}
+		#region Command Processing
+
+		private void EnqueueCommand(Message message)
+		{
+			lock (_commandQueue)
+			{
+				_commandQueue.Enqueue(message);
+			}
+		}
+
+		private void ProcessCommands()
+		{
+			while (true)
+			{
+				Message command = DequeueCommand();
+				if (command != null)
+				{
+					// Process command here
+					Console.WriteLine("Received command: " + command.Type);
+				}
+				Thread.Sleep(10); // Optional: Adjust sleep time as needed
+			}
+		}
+
+		private Message DequeueCommand()
+		{
+			lock (_commandQueue)
+			{
+				if (_commandQueue.Count > 0)
+				{
+					return _commandQueue.Dequeue();
+				}
+				else
+				{
+					return null;
+				}
+			}
+		}
+
+
+		#endregion
+
 
 		private void HandleClient(object obj)
 		{
@@ -58,6 +102,10 @@ namespace Netcode.Server
 				Array.Copy(buffer,cpBuffer, bytesRead);
 				Message msg = MessagePack.MessagePackSerializer.Deserialize<Message>(buffer);
 				Console.WriteLine($"{client.Client.RemoteEndPoint} received {msg.ToString()}");
+
+				if(msg.Type == MessageType.Command)
+					EnqueueCommand(msg);
+
 				Broadcast(buffer, client);
 			}
 

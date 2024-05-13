@@ -10,8 +10,8 @@ namespace Netcode.Common
 	public enum MessageType
 	{
 		Chat,
-		Move,
-		Action,
+		Command,
+		Input
 	}
 
 

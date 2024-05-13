@@ -12,8 +12,10 @@ namespace GameServer
 		static void NewServer()
 		{
 			int port = 5000;
-			RelayServer server = new RelayServer(port);
-			server.Start();
+			//RelayServerTCP server = new RelayServerTCP(port);
+			//server.Start();
+			RelayServerUDP serverUDP = new RelayServerUDP();
+			serverUDP.Start(port);
 		}
 	}
 
